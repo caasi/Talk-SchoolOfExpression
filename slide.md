@@ -58,7 +58,17 @@ type Vertex = (Float, Float)
 
 # Modeling the Problem in OOP: Shape
 
-  * WIP
+```ActionScript
+public class DisplayObject {}
+
+public class Rectangle extends DisplayObject {}
+
+public class Ellipse extends DisplayObject {}
+
+public class RtTriangle extends DisplayObject {}
+
+public class Polygon extends DisplayObject {}
+```
 
 ---
 
@@ -66,7 +76,7 @@ type Vertex = (Float, Float)
 
   * Use `IO` without introducing Monads.
 
-  * Introduce high-order functions later.
+  * Introduce higher-order functions later.
 
   * Introduce recursive data structures later.
 
@@ -102,7 +112,27 @@ type Vector = (Float, Float)
 
 # Modeling the Problem in OOP: Region
 
-  * WIP
+```ActionScript
+public class DisplayObject {
+  public var parent: DisplayObjectContainer;
+  // translation
+  public var x: Number;
+  public var y: Number;
+  // scaling
+  public var scaleX: Number;
+  public var scaleY: Number;
+  // rotation
+  public var rotationX: Number;
+  public var rotationY: Number;
+  // complement, union, intersect
+  public var blendMode: String;
+}
+
+// the Container Pattern
+public class DisplayObjectContainer extends DisplayObject {
+  private var _children: Array; // `Vector.<DisplayObject>`
+}
+```
 
 ---
 
@@ -116,6 +146,25 @@ data Picture
   | Picture `Over` Picture
   | EmptyPic
   deriving Show
+```
+
+---
+
+# Modeling the Problem in OOP: Picture
+
+```ActionScript
+class DisplayObject {
+  // or `paintComponent` in Java Swing
+  public function render() {}
+}
+
+class Rectangle extends DisplayObject {
+  public function render() {}
+}
+
+class DisplayObjectContainer extends DisplayObject {
+  public function render() {}
+}
 ```
 
 ---
@@ -134,9 +183,28 @@ rubberBall t = Ellipse (sin t) (cos t)
 
 ---
 
-# Modeling the Problem in OOP: Animation
+# Animation in JavaScript
 
-  * WIP: CanvasDesigner here
+```JavaScript
+// Time -> a
+var evalCanvas = function(t) { /* ... */ };
+
+var parseOne = function(src) {
+  if (match = src.match(/something/))
+    return function(t) {}
+  if (match = src.match(/something else/))
+    return function(t) {}
+}
+
+var parseTerm = function(src) {
+  /* do something */
+
+  return function(t) {}
+}
+
+// lift0 pi
+var PI = function(t) { return ['num', Math.PI] };
+```
 
 ---
 
@@ -179,6 +247,23 @@ flashingBall
 
 ---
 
+# Without Type Classes
+
+```JavaScript
+var parseExpr = function(src) {
+  /* do something */
+
+  return function(t) {
+    var a = term_a(t)
+    var b = term_b(t)
+
+    return ['num', op(a, b)]
+  }
+}
+```
+
+---
+
 # Modeling the Problem: Reactive Animation
 
   * DSL
@@ -201,7 +286,7 @@ type Event a = Behavior (Maybe a)
 
 ---
 
-# Modoling the Problem: Reactive Animation
+# Modeling the Problem: Reactive Animation
 
   * WIP
 
