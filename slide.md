@@ -20,8 +20,11 @@ class: inverse, center, middle
 
     * `export LIBRARY_PATH="/opt/X11/lib:$LIBRARY_PATH"`
 
-  [hgl]: https://hackage.haskell.org/package/HGL
-  [caasi-soe]: https://github.com/caasi/school-of-expression
+    * [Memo1.lhs][memo1]
+
+[hgl]: https://hackage.haskell.org/package/HGL
+[caasi-soe]: https://github.com/caasi/school-of-expression
+[memo1]: https://hackage.haskell.org/package/IrrHaskell-0.2/src/Memo1.lhs
 
 ---
 
@@ -126,11 +129,12 @@ public class DisplayObject {
   public var rotationY: Number;
   // complement, union, intersect
   public var blendMode: String;
+  // or group them in a matrix
 }
 
 // the Container Pattern
 public class DisplayObjectContainer extends DisplayObject {
-  private var _children: Array; // `Vector.<DisplayObject>`
+  private var _children: Array; // Vector.<DisplayObject>
 }
 ```
 
@@ -191,15 +195,15 @@ var evalCanvas = function(t) { /* ... */ };
 
 var parseOne = function(src) {
   if (match = src.match(/something/))
-    return function(t) {}
+    return function(t) { /* ... */ }
   if (match = src.match(/something else/))
-    return function(t) {}
+    return function(t) { /* ... */ }
 }
 
 var parseTerm = function(src) {
   /* do something */
 
-  return function(t) {}
+  return function(t) { /* ... */ }
 }
 
 // lift0 pi
@@ -266,9 +270,9 @@ var parseExpr = function(src) {
 
 # Modeling the Problem: Reactive Animation
 
-  * DSL
-
   * Hard mode
+
+  * DSL
 
 ```
 newtype Beh a = Beh (Time -> a)
@@ -279,16 +283,84 @@ newtype Behavior2 a = Behavior2 ([(UserAction, Time)] -> [Time] -> a)
 
 newtype Behavior3 a = Behavior3 ([UserAction] -> [Time] -> a)
 
-newtype Behavior a = Behavior ([Maybe UserAction] -> [Time] -> a)
+-- (a^b)^c
+newtype Behavior4 a = Behavior4 ([Maybe UserAction] -> [Time] -> a)
+
+-- a^(b*c)
+newtype Behavior a = Behavior (([Maybe UserAction], [Time]) -> a)
 
 type Event a = Behavior (Maybe a)
 ```
 
 ---
 
-# Modeling the Problem: Reactive Animation
+# What is an UserAction anyway?
 
-  * WIP
+```
+data G.Event
+  = Key { char :: Char, isDown :: Bool }
+  | Button { pt :: Point, isLeft :: Bool, isDown :: Bool }
+  | MouseMove { pt :: Point }
+  | Resize
+  | Closed
+  deriving Show
+
+type UserAction = G.Event
+```
+
+---
+
+# the UserAction List and the Event
+
+```
+uts =
+  ( [ Nothing
+    , Just (Button (10, 10) True True)
+    , Just (MouseMove (15, 15))
+    ]
+  , [ 0.016
+    , 0.032
+    , 0.048
+    ]
+  )
+```
+
+```
+lbp :: Event ()
+lbp = \uts -> [Nothing, Just (), Nothing]
+```
+
+```
+(lbp ->> blue) :: Event (Behavior Color)
+(lbp ->> blue) = \uts -> [Nothing, Just (Behavior Blue), Nothing]
+```
+
+---
+
+# the Behavior
+
+```
+untilB :: Behavior a -> Event (Behavior a) -> Behavior a
+Behavior fb `untilB` Event fe
+  = memoB $ Behavior (\uts@(us, ts) -> loop us ts (fe uts) (fb uts))
+      where loop (_:us) (_:ts) ~(e:es) (b:bs)
+              = b : case e of
+                      Nothing             -> loop us ts es bs
+                      Just (Behavior fb') -> fb' (us, ts)
+```
+
+```
+red `untilB` (lbp ->> blue) :: Behavior Color
+red `untilB` (lbp ->> blue) = \uts -> [Red, Blue, Blue]
+```
+
+---
+
+# Functional Reactive Animation
+
+  * From `([Maybe UserAction], [Time]) -> [Picture]`
+  
+  * To `IO () >> IO () >> IO () >> ...`
 
 ---
 
