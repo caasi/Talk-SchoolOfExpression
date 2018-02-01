@@ -310,34 +310,51 @@ type UserAction = G.Event
 
 ---
 
-# the UserAction List and the Event
+# the UserAction List
 
 ```
 uts =
   ( [ Nothing
     , Just (Button (10, 10) True True)
     , Just (MouseMove (15, 15))
+    ..
     ]
   , [ 0.016
     , 0.032
     , 0.048
+    ..
     ]
   )
 ```
 
+---
+
+# Events
+
 ```
 lbp :: Event ()
-lbp = \uts -> [Nothing, Just (), Nothing]
+lbp = Event (\(uas, _) -> map getlbp uas)
+        where getlbp (Just (Button _ True True)) = Just ()
+              getlbp _                           = Nothing
+-- lbp uts
+-- => [Nothing, Just (), Nothing..]
 ```
 
 ```
-(lbp ->> blue) :: Event (Behavior Color)
-(lbp ->> blue) = \uts -> [Nothing, Just (Behavior Blue), Nothing]
+(=>>) :: Event a -> (a -> b) -> Event b
+Event fe =>> f = Event (map (fmap f) . fe)
+
+(->>) :: Event a -> b -> Event b
+e ->> v = e =>> (\_ -> v)
+
+lbp ->> blue :: Event (Behavior Color)
+-- lbp ->> blue $ uts
+-- => [Nothing, Just (Behavior Blue), Nothing..]
 ```
 
 ---
 
-# the Behavior
+# Behaviors
 
 ```
 untilB :: Behavior a -> Event (Behavior a) -> Behavior a
@@ -351,16 +368,17 @@ Behavior fb `untilB` Event fe
 
 ```
 red `untilB` (lbp ->> blue) :: Behavior Color
-red `untilB` (lbp ->> blue) = \uts -> [Red, Blue, Blue]
+-- red `untilB` (lbp ->> blue) $ uts
+-- => [Red, Blue, Blue..]
 ```
 
 ---
 
 # Functional Reactive Animation
 
-  * From `([Maybe UserAction], [Time]) -> [Picture]`
-  
-  * To `IO () >> IO () >> IO () >> ...`
+  * Compose small behaviors(`([Maybe UserAction], [Time]) -> [a]`) into a big behavior(`Behavior Picture`)
+
+  * Transform `([Maybe UserAction], [Time]) -> [Picture]` into a series of `IO () >> IO () >> IO () >> ...` actions
 
 ---
 
